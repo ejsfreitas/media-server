@@ -1,0 +1,106 @@
+version: '2'
+
+services:
+  plex:
+    image: lsioarmhf/plex:latest
+    container_name: plex
+    restart: always
+    environment:
+      - PLEX_CLAIM="${PLEX_TOKEN}"
+      - PUID=${USER_ID}
+      - PGID=${GROUP_ID}
+    network_mode: "host"
+    ports:
+      - "32400:32400"
+    volumes:
+      - /etc/localtime:/etc/localtime:ro
+      - /mnt/media/movies:/data/movies
+      - /mnt/media/series:/data/tvshows
+      - /mnt/docker/plex/config/:/config
+      - /mnt/media/plex_transcode/:/transcode
+
+  plexpy:
+    image: lsioarmhf/plexpy:latest
+    container_name: plexpy
+    restart: always
+    environment:
+      - PUID=${USER_ID}
+      - PGID=${GROUP_ID}
+    ports:
+      - "8181:8181"
+    volumes:
+      - /mnt/docker/plexpy:/config
+      - /mnt/docker/plex/config/Library/Application Support/Plex Media Server/Logs:/logs:ro
+
+  transmission:
+    image: lsioarmhf/transmission:latest
+    container_name: transmission
+    restart: always
+    environment:
+      - PUID=${USER_ID}
+      - PGID=${GROUP_ID}
+    ports:
+      - "9091:9091"
+    volumes:
+      - /etc/localtime:/etc/localtime:ro
+      - /mnt/docker/transmission/config/:/config
+      - /mnt/media/downloads/:/downloads
+
+  sonarr:
+    image: lsioarmhf/sonarr:latest
+    container_name: sonarr
+    restart: always
+    environment:
+      - PUID=${USER_ID}
+      - PGID=${GROUP_ID}
+    ports:
+      - "8989:8989"
+    volumes:
+      - /etc/localtime:/etc/localtime:ro
+      - /dev/rtc:/dev/rtc:ro
+      - /mnt/media/series:/tv
+      - /mnt/docker/sonarr/config:/config
+      - /mnt/media/downloads/:/downloads
+
+  radarr:
+    image: lsioarmhf/radarr:latest
+    container_name: radarr
+    restart: always
+    environment:
+      - PUID=${USER_ID}
+      - PGID=${GROUP_ID}
+    ports:
+      - "7878:7878"
+    volumes:
+      - /etc/localtime:/etc/localtime:ro
+      - /dev/rtc:/dev/rtc:ro
+      - /mnt/media/movies:/movies
+      - /mnt/docker/radarr/config:/config
+      - /mnt/media/downloads/:/downloads
+
+  # Proxy to a bunch of public trackers
+  jackett:
+    image: lsioarmhf/jackett:latest
+    container_name: jackett
+    restart: always
+    environment:
+      - PUID=${USER_ID}
+      - PGID=${GROUP_ID}
+    ports:
+      - "9117:9117"
+    volumes:
+      - /mnt/docker/jackett/config/:/config
+      - /mnt/media/downloads/:/downloads
+
+  ombi:
+    image: lsioarmhf/ombi
+    container_name: ombi
+    restart: always
+    environment:
+      - PUID=${USER_ID}
+      - PGID=${GROUP_ID}
+    ports:
+      - "3579:3579"
+    volumes:
+      - /etc/localtime:/etc/localtime:ro
+      - /mnt/docker/ombi/config:/config
