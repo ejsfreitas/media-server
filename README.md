@@ -50,7 +50,7 @@ https-portal:
     - '80:80'
     - '443:443'
   environment:
-    DOMAINS: 'ombi.${DOMAIN_NAME} -> http://ombi:3579'
+    DOMAINS: 'ombi.${DOMAIN_NAME} -> http://ombi:3579,
               jackett.${DOMAIN_NAME} -> http://jackett:9117,
               radarr.${DOMAIN_NAME} -> http://radarr:7878,
               sonarr.${DOMAIN_NAME} -> http://sonarr:8989,
@@ -68,6 +68,13 @@ https-portal:
     - plex
     - plexpy
 ```
+
+To refresh all metadata on a schedule get [your plex token](https://support.plex.tv/hc/en-us/articles/204059436) and add the following lines to your crontab and change it as you like:
+```
+0 12,19 * * * /usr/bin/curl "http://127.0.0.1:32400/library/sections/2/refresh?force=1&X-Plex-Token=YOURTOKEN" >> /dev/null 2>&1
+0 3 * * * /usr/bin/curl "http://127.0.0.1:32400/library/sections/1/refresh?force=1&X-Plex-Token=YOURTOKEN" >> /dev/null 2>&1
+```
+
 
 ## Usage
 
