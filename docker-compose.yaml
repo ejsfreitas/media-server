@@ -2,6 +2,7 @@ version: '2'
 
 services:
   plex:
+    # https://hub.docker.com/r/lsioarmhf/plex/
     image: lsioarmhf/plex:latest
     container_name: plex
     restart: always
@@ -19,20 +20,8 @@ services:
       - /mnt/docker/plex/config/:/config
       - /mnt/media/plex_transcode/:/transcode
 
-  plexpy:
-    image: lsioarmhf/plexpy:latest
-    container_name: plexpy
-    restart: always
-    environment:
-      - PUID=${USER_ID}
-      - PGID=${GROUP_ID}
-    ports:
-      - "8181:8181"
-    volumes:
-      - /mnt/docker/plexpy:/config
-      - /mnt/docker/plex/config/Library/Application Support/Plex Media Server/Logs:/logs:ro
-
   transmission:
+    # https://hub.docker.com/r/lsioarmhf/transmission/
     image: lsioarmhf/transmission:latest
     container_name: transmission
     restart: always
@@ -47,6 +36,7 @@ services:
       - /mnt/media/downloads/:/downloads
 
   sonarr:
+    # https://hub.docker.com/r/lsioarmhf/sonarr/
     image: lsioarmhf/sonarr:latest
     container_name: sonarr
     restart: always
@@ -63,6 +53,7 @@ services:
       - /mnt/media/downloads/:/downloads
 
   radarr:
+    # https://hub.docker.com/r/lsioarmhf/radarr/
     image: lsioarmhf/radarr:latest
     container_name: radarr
     restart: always
@@ -80,9 +71,11 @@ services:
 
   # Proxy to a bunch of public trackers
   jackett:
+    # https://hub.docker.com/r/lsioarmhf/jackett/
     image: lsioarmhf/jackett:latest
     container_name: jackett
     restart: always
+    dns: 8.8.8.8
     environment:
       - PUID=${USER_ID}
       - PGID=${GROUP_ID}
@@ -92,15 +85,29 @@ services:
       - /mnt/docker/jackett/config/:/config
       - /mnt/media/downloads/:/downloads
 
-  ombi:
-    image: lsioarmhf/ombi
-    container_name: ombi
+  nextcloud:
+    image: arm32v7/nextcloud:latest
+    container_name: nextcloud
+    restart: always
+    environment:
+      - PUID=${USER_ID}
+      - PGID=${GROUP_ID}
+    volumes:
+      - /mnt/media/cloud:/var/www/html/data
+      - /mnt/docker/nextcloud:/var/www/html/config
+
+  https-portal:
+    image: ejsfreitas/https-portal:armv7-1.0.0
+    container_name: https-portal
     restart: always
     environment:
       - PUID=${USER_ID}
       - PGID=${GROUP_ID}
     ports:
-      - "3579:3579"
-    volumes:
-      - /etc/localtime:/etc/localtime:ro
-      - /mnt/docker/ombi/config:/config
+      - '80:80'
+      - '443:443'
+    environment:
+      DOMAINS: 'cloud.${DOMAIN_NAME} -> http://nextcloud:80'
+      STAGE: 'production'
+      FORCE_RENEW: 'true'
+      CLIENT_MAX_BODY_SIZE: 0
